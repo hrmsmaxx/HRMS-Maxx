@@ -1,0 +1,94 @@
+
+##### SERVER #####
+IP-address (as per hostname): ***.***.***.***
+[WARN] could not determine server's ip address by ifconfig
+[INFO] OS version is Ubuntu 18.04.4 LTS
+ 
+[INFO] ISPConfig is installed.
+
+##### ISPCONFIG #####
+ISPConfig version is 3.1dev
+
+
+##### VERSION CHECK #####
+
+[INFO] php (cli) version is 7.2.24-0ubuntu***.***.***.***
+
+##### PORT CHECK #####
+
+[WARN] Port 465 (SMTP server SSL) seems NOT to be listening
+
+##### MAIL SERVER CHECK #####
+
+[WARN] I found no "submission" entry in your postfix master.cf
+[INFO] this is not critical, but if you want to offer port 587 for smtp connections you have to enable this.
+[WARN] I found no "smtps" entry in your postfix master.cf
+[INFO] this is not critical, but if you want to offer SSL for smtp (not TLS) connections you have to enable this.
+
+##### RUNNING SERVER PROCESSES #####
+
+[INFO] I found the following web server(s):
+	Apache 2 (PID 14095)
+[INFO] I found the following mail server(s):
+	Postfix (PID 10861)
+[INFO] I found the following pop3 server(s):
+	Dovecot (PID 10882)
+[INFO] I found the following imap server(s):
+	Dovecot (PID 10882)
+[INFO] I found the following ftp server(s):
+	PureFTP (PID 10975)
+
+##### LISTENING PORTS #####
+(only		()
+Local		(Address)
+[anywhere]:21		(10975/pure-ftpd)
+***.***.***.***:53		(5752/named)
+[localhost]:53		(5752/named)
+***.***.***.***:53		(28331/systemd-resol)
+[anywhere]:22		(941/sshd)
+[anywhere]:25		(10861/master)
+[localhost]:953		(5752/named)
+[anywhere]:993		(10882/dovecot)
+[anywhere]:995		(10882/dovecot)
+[localhost]:10023		(991/postgrey)
+[localhost]:10025		(10861/master)
+[localhost]:3306		(29307/mysqld)
+[localhost]:10027		(10861/master)
+[localhost]:11211		(11556/memcached)
+[anywhere]:110		(10882/dovecot)
+[anywhere]:143		(10882/dovecot)
+*:*:*:*::*:21		(10975/pure-ftpd)
+*:*:*:*::*:53		(5752/named)
+*:*:*:*::*:22		(941/sshd)
+*:*:*:*::*:25		(10861/master)
+*:*:*:*::*:953		(5752/named)
+*:*:*:*::*:443		(14095/apache2)
+*:*:*:*::*:993		(10882/dovecot)
+*:*:*:*::*:995		(10882/dovecot)
+*:*:*:*::*:9000		(22665/hhvm)
+[localhost]10		(10882/dovecot)
+[localhost]43		(10882/dovecot)
+*:*:*:*::*:8080		(14095/apache2)
+*:*:*:*::*:80		(14095/apache2)
+*:*:*:*::*:8081		(14095/apache2)
+
+
+
+
+##### IPTABLES #####
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination         
+f2b-sshd   tcp  --  [anywhere]/0            [anywhere]/0            multiport dports 22
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination         
+
+Chain f2b-sshd (1 references)
+target     prot opt source               destination         
+RETURN     all  --  [anywhere]/0            [anywhere]/0           
+
+
+
