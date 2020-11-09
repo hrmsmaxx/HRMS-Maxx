@@ -1,0 +1,63 @@
+server/env.php
+temp/
+vendor/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+PHP_errors.log
+conf/domPDF/lib/fonts/log.htm
+uploads/
+uploads/*
+.idea/.name
+.idea/misc.xml
+.idea/workspace.xml
+.idea/Fixed.iml
+.idea/modules.xml
+.idea/encodings.xml
+.idea/codeStyleSettings.xml
+.idea/deployment.xml
+.htaccess
+.idea
+.idea/*
+tmp/*

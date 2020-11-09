@@ -1,0 +1,431 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+
+
+class Subscriber_items extends MX_Controller {
+
+
+
+	function __construct()
+
+	{
+
+		parent::__construct();
+
+		$this->load->module('layouts');
+			// User::logged_in();
+		$this->load->library(array('template','form_validation'));
+
+		$this->load->model(array('Subscriber_item','App'));
+// 		App::module_access('menu_items');
+		$this->applib->set_locale();
+
+	}
+
+
+
+	function index()
+
+	{
+
+		$this->list_items();
+
+	}
+
+
+
+	function list_items()
+
+	{
+
+	$theme_settings = $this->db->get_where('subdomin_theme_settings',array('subdomain_id'=>$this->session->userdata('subdomain_id')))->row_array();
+
+    $theme_settings = unserialize($theme_settings['theme_settings']);
+
+    $company_name = $theme_settings['website_name']?$theme_settings['website_name']:config_item('company_name');
+
+	$this->template->title(lang('item_lookups').' - '.$company_name);
+
+	$data['page'] = lang('sales');
+
+    $data['sub_page'] = lang('items');
+
+	$data['datatables'] = TRUE;
+
+	$data['invoice_items'] = Subscriber_item::list_items();
+
+	$data['project_tasks'] = Subscriber_item::list_tasks();
+
+	$this->template
+
+	->set_layout('superadmin')
+
+	->build('templates',isset($data) ? $data : NULL);
+
+	}
+
+
+
+	function add_item()
+
+	{
+
+		if ($this->input->post()) {
+
+
+
+		$this->form_validation->set_rules('item_name', 'Item Name', 'required');
+
+		$this->form_validation->set_rules('quantity', 'Quantity', 'required');
+
+		$this->form_validation->set_rules('unit_cost', 'Unit Cost', 'required');
+
+
+
+		if ($this->form_validation->run() == FALSE)
+
+		{
+
+				// $this->session->set_flashdata('response_status', 'error');
+
+				// $this->session->set_flashdata('message', lang('operation_failed'));
+
+				$this->session->set_flashdata('tokbox_error', lang('operation_failed'));
+
+				redirect($this->input->post('r_url'));
+
+		}else{		
+
+
+
+
+
+			$sub_total = $this->input->post('unit_cost') * $this->input->post('quantity');
+
+			$_POST['item_tax_rate'] = $this->input->post('item_tax_rate');
+
+			$_POST['item_tax_total'] = Applib::format_deci(($_POST['item_tax_rate'] / 100) *  $sub_total);
+
+			$_POST['total_cost'] =  Applib::format_deci($sub_total + $_POST['item_tax_total']);
+
+			// $_POST['created_by'] = User::get_id();
+			
+			// $_POST['subdomain_id'] = $this->session->userdata('subdomain_id');
+
+
+
+			App::save_data('subscriber_items_saved',$this->input->post());
+
+				// echo $this->db->last_query(); exit;
+
+			// $this->session->set_flashdata('response_status', 'success');
+
+				// $this->session->set_flashdata('message', lang('item_added_successfully'));
+
+				$this->session->set_flashdata('tokbox_success', lang('item_added_successfully'));
+
+				redirect('subscriber_items');
+
+		}
+
+		}else{
+
+			$data['rates'] = App::get_by_where('subscribers_tax_rates',array());
+
+			$this->load->view('modal/add_item',$data);
+
+		}
+
+	}
+
+	function save_task()
+
+	{
+
+		if ($this->input->post()) {
+
+		$this->load->library('form_validation');
+
+
+
+		$this->form_validation->set_error_delimiters('<span style="color:red">', '</span><br>');
+
+		$this->form_validation->set_rules('task_name', 'Task Name', 'required');
+
+		$this->form_validation->set_rules('description', 'Description', 'required');
+
+
+
+		if ($this->form_validation->run() == FALSE)
+
+		{
+
+				// $this->session->set_flashdata('response_status', 'error');
+
+				// $this->session->set_flashdata('message', lang('task_add_failed'));
+
+				$this->session->set_flashdata('tokbox_error', lang('task_add_failed'));
+
+				redirect($_SERVER['HTTP_REFERER']);
+
+		}else{
+
+			$visible = ($this->input->post('visible') == 'on') ? 'Yes' : 'No';
+
+
+
+			$form_data = array(
+
+			                'task_name' => $this->input->post('task_name'),
+
+			                'visible' => $visible,
+
+			                'task_desc' => $this->input->post('description'),
+
+			                'estimate_hours' => Applib::format_deci($this->input->post('estimate')),
+
+			                'saved_by' => User::get_id(),
+
+			            );
+
+
+
+			App::save_data('saved_tasks',$form_data);
+
+
+
+			// $this->session->set_flashdata('response_status', 'success');
+
+			// $this->session->set_flashdata('message', lang('task_add_success'));
+
+			$this->session->set_flashdata('tokbox_success', lang('task_add_success'));
+
+			redirect($_SERVER['HTTP_REFERER']);
+
+		}
+
+		}else{
+
+		$this->load->view('modal/save_task');
+
+		}
+
+	}
+
+
+
+	function edit_item($id = NULL)
+
+	{
+
+		if ($this->input->post()) {
+
+
+
+		$this->form_validation->set_rules('item_name', 'Item Name', 'required');
+
+		$this->form_validation->set_rules('quantity', 'Quantity', 'required');
+
+		$this->form_validation->set_rules('unit_cost', 'Unit Cost', 'required');
+
+
+
+
+
+		if ($this->form_validation->run() == FALSE)
+
+		{
+
+				// $this->session->set_flashdata('response_status', 'error');
+
+				// $this->session->set_flashdata('message', lang('operation_failed'));
+
+				$this->session->set_flashdata('tokbox_error', lang('operation_failed'));
+
+				redirect($this->input->post('r_url'));
+
+		}else{	
+
+
+
+			$sub_total = $this->input->post('unit_cost') * $this->input->post('quantity');
+
+			$_POST['item_tax_rate'] = $this->input->post('item_tax_rate');
+
+			$_POST['item_tax_total'] = Applib::format_deci(($_POST['item_tax_rate'] / 100) *  $sub_total);
+
+			$_POST['total_cost'] = Applib::format_deci($sub_total + $_POST['item_tax_total']);
+
+
+
+			$url = $this->input->post('r_url');
+
+			unset($_POST['r_url']);
+
+
+
+			App::update('subscriber_items_saved',array('item_id' => $this->input->post('item_id')),$this->input->post()); 
+
+
+
+			// $this->session->set_flashdata('response_status', 'success');
+
+				// $this->session->set_flashdata('message', lang('operation_successful'));
+
+				$this->session->set_flashdata('tokbox_success', lang('operation_successful'));
+
+				redirect($url);
+
+		}
+
+		}else{
+
+				$data['rates'] = App::get_by_where('subscribers_tax_rates',array());
+
+				$data['id'] = $id;
+
+				$this->load->view('modal/edit_item',$data);
+
+		}
+
+	}
+
+	function edit_task($task = NULL)
+
+	{		
+
+		if ($this->input->post()) {
+
+		$this->load->library('form_validation');
+
+		$this->form_validation->set_error_delimiters('<span style="color:red">', '</span><br>');
+
+		
+
+		$this->form_validation->set_rules('task_name', 'Task Name', 'required');
+
+		$this->form_validation->set_rules('description', 'Description', 'required');
+
+
+
+		$template_id = $this->input->post('template_id', TRUE);
+
+		if ($this->form_validation->run() == FALSE)
+
+		{
+
+				// $this->session->set_flashdata('response_status', 'error');
+
+				// $this->session->set_flashdata('message', lang('task_update_failed'));
+
+				$this->session->set_flashdata('tokbox_error', lang('task_update_failed'));
+
+				redirect('subscriber_items');
+
+		}else{
+
+		$visible = ($this->input->post('visible') == 'on') ? 'Yes' : 'No'; 
+
+			$form_data = array(
+
+			                'task_name' => $this->input->post('task_name'),
+
+			                'visible' => $visible,
+
+			                'task_desc' => $this->input->post('description'),
+
+			                'estimate_hours' => Applib::format_deci($this->input->post('estimate')),
+
+			                'saved_by' => User::get_id(),
+
+			            );
+
+			App::update('saved_tasks',array('template_id' => $template_id),$form_data);
+
+
+
+			// $this->session->set_flashdata('response_status', 'success');
+
+			// $this->session->set_flashdata('message', lang('task_update_success'));
+
+			$this->session->set_flashdata('tokbox_success', lang('task_update_success'));
+
+			redirect('subscriber_items');
+
+		}
+
+	}else{
+
+		$data['id'] = $task;
+
+		$this->load->view('modal/edit_task',isset($data) ? $data : NULL);
+
+	}
+
+	}
+
+	function delete_task($task = NULL){
+
+		if ($this->input->post() ){
+
+					$template_id = $this->input->post('template_id', TRUE);
+
+					App::delete('saved_tasks',array('template_id' => $template_id));
+
+
+
+					// $this->session->set_flashdata('response_status', 'success');
+
+					// $this->session->set_flashdata('message', lang('item_deleted_successfully'));
+
+					$this->session->set_flashdata('tokbox_success', lang('item_deleted_successfully'));
+
+					redirect($this->input->post('r_url'));
+
+		}else{
+
+			$data['template_id'] = $task;
+
+			$this->load->view('modal/delete_task',$data);
+
+		}
+
+		
+
+	}
+
+	function delete_item($item = NULL){
+
+		if ($this->input->post() ){
+
+					$item_id = $this->input->post('item', TRUE);
+
+					App::delete('subscriber_items_saved',array('item_id' => $item_id));
+
+
+
+					// $this->session->set_flashdata('response_status', 'success');
+
+					// $this->session->set_flashdata('message', lang('item_deleted_successfully'));
+
+					$this->session->set_flashdata('tokbox_error', lang('item_deleted_successfully'));
+
+					redirect($this->input->post('r_url'));
+
+		}else{
+
+			$data['item_id'] = $item;
+
+			$this->load->view('modal/delete_item',$data);
+
+		}
+
+		
+
+	}
+
+}
+
+
+
+/* End of file items.php */
